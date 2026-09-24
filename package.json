@@ -1,12 +1,12 @@
 {
   "name": "helldivers-war",
-  "author": "MakeAwesomeHappen",
+  "author": "xFN10x",
   "version": "1.0.0",
   "keywords": ["pebble-app"],
   "private": true,
   "dependencies": {},
   "pebble": {
-    "displayName": "helldivers-war",
+    "displayName": "HELLDIVERS Notifier",
     "uuid": "988fc3d9-34f2-43b5-959a-f53a93344a73",
     "sdkVersion": "3",
     "enableMultiJS": true,
