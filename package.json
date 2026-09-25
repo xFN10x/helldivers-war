@@ -26,7 +26,13 @@
       "dummy"
     ],
     "resources": {
-      "media": []
+      "media": [
+        {
+          "type": "raw",
+          "name": "GALACTIC_MAP",
+          "file": "map.pdc"
+        }
+      ]
     }
   }
 }
