@@ -25,6 +25,13 @@
           "type": "raw",
           "name": "LOADING_ANI",
           "file": "loading_4.pdc"
+        },
+        {
+          "type": "bitmap",
+          "name": "LOADING_TEXT",
+          "file": "loading_text.png",
+          "memoryFormat": "Smallest",
+          "spaceOptimization": "memory"
         }
       ]
     }

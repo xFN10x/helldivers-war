@@ -1,6 +1,6 @@
 #include <pebble.h>
 
-#include "map.h"
+#include "loading_win.h"
 
 typedef struct
 {
@@ -9,7 +9,7 @@ typedef struct
   void (*ready)();
 } HN_Win;
 
-HN_Win HN_MAIN_WIN = {HN_GetWin_Map, HN_DesWin_Map, HN_ReadyWin_Map};
+HN_Win HN_LOADING_WIN = {HN_GetWin_Map, HN_DesWin_Map, HN_ReadyWin_Map};
 
 static Window *s_window;
 static TextLayer *s_text_layer;
@@ -28,7 +28,7 @@ void HN_SwitchWin(HN_Win *win, const bool animated)
 
 static void prv_init(void)
 {
-  HN_SwitchWin(&HN_MAIN_WIN, true);
+  HN_SwitchWin(&HN_LOADING_WIN, true);
 }
 
 static void prv_deinit(void)
