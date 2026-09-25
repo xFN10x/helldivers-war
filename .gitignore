@@ -2,3 +2,5 @@ build
 .lock-waf_linux_build
 .vscode
 *.Identifier
+.env
+logs.sh

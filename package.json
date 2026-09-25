@@ -11,13 +11,7 @@
     "sdkVersion": "3",
     "enableMultiJS": true,
     "targetPlatforms": [
-      "aplite",
-      "basalt",
-      "chalk",
-      "diorite",
-      "emery",
-      "flint",
-      "gabbro"
+      "emery"
     ],
     "watchapp": {
       "watchface": false
@@ -29,8 +23,8 @@
       "media": [
         {
           "type": "raw",
-          "name": "GALACTIC_MAP",
-          "file": "map.pdc"
+          "name": "LOADING_ANI",
+          "file": "loading_4.pdc"
         }
       ]
     }

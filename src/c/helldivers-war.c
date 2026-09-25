@@ -6,9 +6,10 @@ typedef struct
 {
   WindowHandler create;
   WindowHandler destroy;
+  void (*ready)();
 } HN_Win;
 
-HN_Win HN_MAIN_WIN = {HN_GetWin_Map, HN_DesWin_Map};
+HN_Win HN_MAIN_WIN = {HN_GetWin_Map, HN_DesWin_Map, HN_ReadyWin_Map};
 
 static Window *s_window;
 static TextLayer *s_text_layer;
@@ -22,6 +23,7 @@ void HN_SwitchWin(HN_Win *win, const bool animated)
                                            .unload = win->destroy,
                                        });
   window_stack_push(s_window, animated);
+  win->ready();
 }
 
 static void prv_init(void)

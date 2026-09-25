@@ -1,4 +1,5 @@
 #include <pebble.h>
+#define DELTA 13
 
 static Layer *map_layer;
 static GDrawCommandImage *map_layer_draw;
@@ -13,14 +14,25 @@ void HN_GetWin_Map(Window *window)
     Layer *wlayer = window_get_root_layer(window);
     GRect wbounds = layer_get_bounds(wlayer);
 
-    map_layer_draw = gdraw_command_image_create_with_resource(RESOURCE_ID_GALACTIC_MAP);
+    map_layer_draw = gdraw_command_image_create_with_resource(RESOURCE_ID_LOADING_ANI);
+    if (map_layer_draw == NULL)
+    {
+        APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to load test!");
+        return;
+    }
 
-    map_layer = layer_create(GRect(0, 0, 200, 200));
+    map_layer = layer_create(GRect(0, 0, 200, 228));
     layer_set_update_proc(map_layer, render_image);
     layer_add_child(wlayer, map_layer);
+}
+
+void HN_ReadyWin_Map()
+{
 }
 
 /// @brief Called when the window is removed
 void HN_DesWin_Map(Window *window)
 {
+    layer_destroy(map_layer);
+    gdraw_command_image_destroy(map_layer_draw);
 }
