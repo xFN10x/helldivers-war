@@ -2,5 +2,5 @@ build
 .lock-waf_linux_build
 .vscode
 *.Identifier
-.env
+src/pkjs/env.js
 logs.sh

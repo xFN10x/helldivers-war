@@ -17,7 +17,8 @@
       "watchface": false
     },
     "messageKeys": [
-      "dummy"
+      "ready",
+      "HBPing"
     ],
     "resources": {
       "media": [
