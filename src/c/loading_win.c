@@ -1,5 +1,5 @@
 #include <pebble.h>
-#define DELTA 100
+#define DELTA 50
 
 static Layer *loading_bg_layer;
 static BitmapLayer *loading_text_layer;

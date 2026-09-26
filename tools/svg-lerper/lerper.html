@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-
+<!--you know what, this is too much work-->
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -50,11 +50,13 @@
             /** @type {Array<Array<any>>} */
             const outPathData = parse(lerpto.getAttribute("d"));
             inPathData.forEach((command, i) => {
+                let lerpedCommand = {}
                 const outCommand = outPathData[i]
-                        console.log(outCommand[0])
+                console.log(outCommand)
+                console.log(command)
                 command.forEach((arg, i2) => {
                     if (typeof arg === "number") {
-                        console.log(outCommand[i2] - arg)
+                        //console.log(outCommand[i2] - arg)
                     }
                 })
             });

@@ -39,7 +39,7 @@ static void prv_deinit(void)
 int main(void)
 {
   prv_init();
-
+  
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", s_window);
 
   app_event_loop();
