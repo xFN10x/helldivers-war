@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVG Lerper</title>
+    <script type="module" src="https://unpkg.com/parse-svg-path@0.2.0/dist/index.mjs"></script>
+</head>
+
+<body>
+    <h1>SVG Lerper</h1>
+    hey, i decided to program this myself!
+    <br />
+    <br />
+    <br />
+
+    <input id="svgselector" type="file" title="Import..." accept="image/svg+xml" multiple />
+
+    <div>
+        <input id="lerpAmount" type="range" min="0.0" max="1.0" step="0.0001" />
+        <div id="input"></div>
+        <div id="output"></div>
+        <div id="lerpto"></div>
+    </div>
+</body>
+
+<script type="module">
+    //@ts-check
+    import parse from "https://unpkg.com/parse-svg-path@0.2.0/dist/index.mjs";
+    console.log(parse)
+    const input = document.getElementById("input");
+    const output = document.getElementById("output");
+    const lerpAmount = document.getElementById("lerpAmount");
+    const svgselectorinput = document.getElementById("svgselector");
+    var svgs = {};
+
+    svgselectorinput.onclick = importSvgs;
+    lerpAmount.onchange = lerpSvgs;
+
+    function lerpSvgs() {
+        Array.from(input.children[0].children).forEach(element => {
+            if (element.nodeName != "path") return;
+            const pathId = element.getAttribute("id")
+            const lerpto = new DOMParser().parseFromString(svgs[1], "image/svg+xml").getElementById(pathId)
+
+            console.log(pathId)
+            /** @type {Array<Array<any>>} */
+            const inPathData = parse(element.getAttribute("d"));
+            /** @type {Array<Array<any>>} */
+            const outPathData = parse(lerpto.getAttribute("d"));
+            inPathData.forEach((command, i) => {
+                const outCommand = outPathData[i]
+                        console.log(outCommand[0])
+                command.forEach((arg, i2) => {
+                    if (typeof arg === "number") {
+                        console.log(outCommand[i2] - arg)
+                    }
+                })
+            });
+        });
+    }
+
+    function importSvgs() {
+        const files = svgselectorinput.files;
+
+        const reader = new FileReader();
+        const reader2 = new FileReader();
+        reader.onload = (e) => {
+            //console.log(e.target.result);
+            svgs[0] = e.target.result;
+            input.innerHTML = e.target.result;
+        };
+        reader2.onload = (e) => {
+            //console.log(e.target.result);
+            svgs[1] = e.target.result;
+            output.innerHTML = e.target.result;
+        };
+
+        reader.readAsText(files[0]);
+        reader2.readAsText(files[1]);
+
+        lerpSvgs();
+    }
+</script>
+
+</html>

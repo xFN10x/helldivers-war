@@ -23,7 +23,7 @@
       "media": [
         {
           "type": "raw",
-          "name": "LOADING_ANI",
+          "name": "LOADING_BG",
           "file": "loading_4.pdc"
         },
         {
@@ -32,6 +32,11 @@
           "file": "loading_text.png",
           "memoryFormat": "Smallest",
           "spaceOptimization": "memory"
+        },
+        {
+          "type": "raw",
+          "name": "LOADING_ANI",
+          "file": "loading_ani.pdc"
         }
       ]
     }
