@@ -3,6 +3,7 @@
 #include "helldivers-war.h"
 #include "loading_win.h"
 #include "failed_connect_win.h"
+#include "messages.h"
 
 HN_Win HN_LOADING_WIN = {"loading_win", HN_GetWin_Loading, HN_DesWin_Loading, HN_ReadyWin_Loading};
 HN_Win HN_FAILED_CONNECT_WIN = {"failed_connect_win", HN_GetWin_FailedConnc, HN_DesWin_FailedConnc, HN_ReadyWin_FailedConnc};
@@ -33,20 +34,9 @@ void HN_SwitchWin(HN_Win *hnwin, const bool animated)
   hnwin->ready();
 }
 
-static void message_recieved(DictionaryIterator *iterator, void *context)
-{
-  Tuple *ready = dict_find(iterator, MESSAGE_KEY_ready);
-  Tuple *HBPing = dict_find(iterator, MESSAGE_KEY_HBPing);
-
-  if (ready)
-  {
-    HN_Win_Loading_JSReady();
-  }
-}
-
 static void prv_init(void)
 {
-  app_message_register_inbox_received(message_recieved);
+  msg_init();
 
   HN_Font1 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_MAIN_FONT_20));
 

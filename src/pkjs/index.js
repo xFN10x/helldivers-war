@@ -1,19 +1,19 @@
 //@ts- check
-const env = require("./env")
+const env = require("./env");
+// https://helldivers.bot/docs/api
+const api = "https://helldivers.bot/api/";
 
 function sendMessage(dict) {
-    console.log(
-        `Sending message at size ${new TextEncoder().encode(JSON.stringify(dict)).length} bytes: \n${dict}`
-    )
+    console.log(`Sending message: \n${JSON.stringify(dict)}`);
 
-    Pebble.sendMessage(dict)
+    Pebble.sendAppMessage(dict);
 }
 
 function onReady() {
-    console.log("Helldivers Notifier ready!")
+    console.log("Helldivers Notifier ready!");
     sendMessage({
         ready: 1,
-    })
+    });
 
     return;
 }
@@ -23,21 +23,30 @@ function onMessage(event) {
     // Get the dictionary from the message
     var dict = event.payload;
 
-    console.log("Got message: " + JSON.stringify(dict))
+    console.log("Got message: " + JSON.stringify(dict));
 
     for (const key in dict) {
         switch (key) {
             case "HBPing":
-                console.log("Pinging!")
-                break
+                console.log("Pinging!");
+                const req = new XMLHttpRequest();
+                req.onload = function() {
+                    console.log(`Seems like helldivers bot is online; got ${this.responseType}`)
+
+                    sendMessage({""})
+                }
+
+                req.open("HEAD", api + "h1/campaign");
+                req.send();
+                break;
 
             default:
-                break
+                break;
         }
     }
 }
 
-console.log(env.api_key)
+console.log(env.api_key);
 
-Pebble.addEventListener("appmessage", onMessage)
-Pebble.addEventListener("ready", onReady)
+Pebble.addEventListener("appmessage", onMessage);
+Pebble.addEventListener("ready", onReady);

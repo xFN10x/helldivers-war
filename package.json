@@ -2,7 +2,9 @@
   "name": "helldivers-war",
   "author": "xFN10x",
   "version": "1.0.0",
-  "keywords": ["pebble-app"],
+  "keywords": [
+    "pebble-app"
+  ],
   "private": true,
   "dependencies": {},
   "pebble": {
@@ -44,6 +46,12 @@
           "name": "MAIN_FONT_20",
           "file": "font1.ttf",
           "characterRegex": "[ -~]"
+        },
+        {
+          "type": "bitmap",
+          "name": "ICON",
+          "file": "icon.png",
+          "menuIcon": true
         }
       ]
     }

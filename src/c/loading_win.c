@@ -132,12 +132,6 @@ void HN_Win_Loading_JSReady()
         return;
     app_timer_reschedule(timeout_timer, 10 * 1000);
     DictionaryIterator *pingReq;
-    AppMessageResult res = app_message_open(2048, 128);
-    if (res != APP_MSG_OK)
-    {
-        APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to open messages! %d", res);
-        window_stack_pop_all(true);
-    }
 
     AppMessageResult resBegin = app_message_outbox_begin(&pingReq);
     if (resBegin == APP_MSG_OK)
@@ -146,6 +140,7 @@ void HN_Win_Loading_JSReady()
         dict_write_int(pingReq, MESSAGE_KEY_HBPing, &val, sizeof(int), true);
 
         app_message_outbox_send();
+        APP_LOG(APP_LOG_LEVEL_ERROR, "Sent Helldivers Bot ping req...");
     }
     else
     {
