@@ -3,6 +3,7 @@ const env = require("./env");
 // https://helldivers.bot/docs/api
 const api = "https://helldivers.bot/api/";
 
+
 function sendMessage(dict) {
     console.log(`Sending message: \n${JSON.stringify(dict)}`);
 
@@ -33,7 +34,7 @@ function onMessage(event) {
                 req.onload = function() {
                     console.log(`Seems like helldivers bot is online; got ${this.responseType}`)
 
-                    sendMessage({""})
+                    sendMessage({"HBPing": 1})
                 }
 
                 req.open("HEAD", api + "h1/campaign");

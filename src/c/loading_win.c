@@ -47,8 +47,9 @@ static void render_loading_vec_animated(Layer *layer, GContext *ctx)
     // If another frame was found, draw it
     if (frame)
     {
+        gdraw_command_image_set_bounds_size(gdraw_command_sequence_get_frame_by_index(loading_bg_animated_draw, frame), GSize(300,300));
         gdraw_command_frame_draw(ctx, loading_bg_animated_draw, frame, GPoint((bounds.size.w - seq_bounds.w) / 2, (bounds.size.h - seq_bounds.h) / 2));
-    }
+    };
 
     // Advance to the next frame, wrapping if neccessary
     int num_frames = gdraw_command_sequence_get_num_frames(loading_bg_animated_draw);
