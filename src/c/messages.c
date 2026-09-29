@@ -1,5 +1,6 @@
 #include <pebble.h>
 
+#include "helldivers-war.h"
 #include "loading_win.h"
 
 static void message_recieved(DictionaryIterator *iterator, void *context)
@@ -11,6 +12,9 @@ static void message_recieved(DictionaryIterator *iterator, void *context)
     if (ready)
     {
         HN_Win_Loading_JSReady();
+    }
+    else if (HBPing) {
+        HN_SwitchWin(&HN_RECAP_LOADING_WIN, false);
     }
 }
 

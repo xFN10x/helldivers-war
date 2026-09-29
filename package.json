@@ -52,6 +52,11 @@
           "name": "ICON",
           "file": "icon.png",
           "menuIcon": true
+        },
+        {
+          "type": "raw",
+          "name": "RECAP_ANI",
+          "file": "loading_trans.pdc"
         }
       ]
     }

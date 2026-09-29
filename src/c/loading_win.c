@@ -5,22 +5,16 @@
 #define DELTA 30
 
 static Layer *loading_bg_layer;
+static GDrawCommandSequence *loading_bg_animated_draw;
 static BitmapLayer *loading_text_layer;
 static GDrawCommandImage *loading_bg_draw;
-static GDrawCommandSequence *loading_bg_animated_draw;
 static GBitmap *loading_text_draw;
-static AppTimer *bgTimer;
+static AppTimer *aniTimer;
 static int aniIndex;
 static Window *this;
 static AppTimer *timeout_timer;
 static bool reverse_animation = false;
 static bool gave_up = false;
-
-static void render_loading_vec(Layer *layer, GContext *ctx)
-{
-
-    gdraw_command_image_draw(ctx, loading_bg_draw, GPoint(0, 0));
-}
 
 static void next_frame_handler(void *context)
 {
@@ -28,10 +22,9 @@ static void next_frame_handler(void *context)
     layer_mark_dirty(loading_bg_layer);
 
     // Continue the sequence
-    bgTimer = app_timer_register(DELTA, next_frame_handler, NULL);
+    aniTimer = app_timer_register(DELTA, next_frame_handler, NULL);
 }
-
-static void render_loading_vec_animated(Layer *layer, GContext *ctx)
+static void render_ani_vec_animated(Layer *layer, GContext *ctx)
 {
 
     // draw bg
@@ -40,14 +33,14 @@ static void render_loading_vec_animated(Layer *layer, GContext *ctx)
 
     GRect bounds = layer_get_bounds(layer);
     GSize seq_bounds = gdraw_command_sequence_get_bounds_size(loading_bg_animated_draw);
-
+    
     // Get the next frame
     GDrawCommandFrame *frame = gdraw_command_sequence_get_frame_by_index(loading_bg_animated_draw, aniIndex);
 
     // If another frame was found, draw it
     if (frame)
     {
-        gdraw_command_image_set_bounds_size(gdraw_command_sequence_get_frame_by_index(loading_bg_animated_draw, frame), GSize(300,300));
+        //gdraw_command_sequence_set_bounds_size(loading_bg_animated_draw, GSize(i0 * 10,300));
         gdraw_command_frame_draw(ctx, loading_bg_animated_draw, frame, GPoint((bounds.size.w - seq_bounds.w) / 2, (bounds.size.h - seq_bounds.h) / 2));
     };
 
@@ -103,7 +96,7 @@ void HN_GetWin_Loading(Window *window)
 
     loading_bg_layer = layer_create(wbounds);
     // layer_set_update_proc(loading_bg_layer, render_loading_vec);
-    layer_set_update_proc(loading_bg_layer, render_loading_vec_animated);
+    layer_set_update_proc(loading_bg_layer, render_ani_vec_animated);
 
     loading_text_layer = bitmap_layer_create(GRect(0, 170, 200, 21));
     bitmap_layer_set_bitmap(loading_text_layer, loading_text_draw);
@@ -113,7 +106,7 @@ void HN_GetWin_Loading(Window *window)
     layer_add_child(wlayer, loading_bg_layer);
     layer_add_child(wlayer, bitmap_layer_get_layer(loading_text_layer));
 
-    bgTimer = app_timer_register(DELTA, next_frame_handler, NULL);
+    aniTimer = app_timer_register(DELTA, next_frame_handler, NULL);
 }
 
 static void timeout(void *context)
@@ -153,13 +146,11 @@ void HN_Win_Loading_JSReady()
 /// @brief Called when the window is removed
 void HN_DesWin_Loading(Window *window)
 {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Removing loading win");
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Timer is: %s", timeout_timer);
+    gave_up = true;
     layer_destroy(loading_bg_layer);
     bitmap_layer_destroy(loading_text_layer);
     gdraw_command_image_destroy(loading_bg_draw);
     gbitmap_destroy(loading_text_draw);
     gdraw_command_sequence_destroy(loading_bg_animated_draw);
     window_destroy(this);
-    gave_up = true;
 }

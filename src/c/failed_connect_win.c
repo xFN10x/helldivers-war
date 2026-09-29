@@ -14,7 +14,7 @@ static void drawBg(struct Layer *layer, GContext *ctx)
     graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
 }
 
-void HN_GetWin_FailedConnc(Window *window)
+void HN_GetWin_FailedConnec(Window *window)
 {
     this = window;
     Layer *wlayer = window_get_root_layer(window);
@@ -40,13 +40,13 @@ static void cls(void *context)
     window_stack_pop_all(true);
 }
 
-void HN_ReadyWin_FailedConnc()
+void HN_ReadyWin_FailedConnec()
 {
     app_timer_register(5000, cls, NULL);
 }
 
 /// @brief Called when the window is removed
-void HN_DesWin_FailedConnc(Window *window)
+void HN_DesWin_FailedConnec(Window *window)
 {
     layer_destroy(bg);
     window_destroy(this);

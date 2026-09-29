@@ -3,10 +3,12 @@
 #include "helldivers-war.h"
 #include "loading_win.h"
 #include "failed_connect_win.h"
+#include "recap_loading_win.h"
 #include "messages.h"
 
 HN_Win HN_LOADING_WIN = {"loading_win", HN_GetWin_Loading, HN_DesWin_Loading, HN_ReadyWin_Loading};
-HN_Win HN_FAILED_CONNECT_WIN = {"failed_connect_win", HN_GetWin_FailedConnc, HN_DesWin_FailedConnc, HN_ReadyWin_FailedConnc};
+HN_Win HN_FAILED_CONNECT_WIN = {"failed_connect_win", HN_GetWin_RecapLoading, HN_DesWin_RecapLoading, HN_ReadyWin_RecapLoading};
+HN_Win HN_RECAP_LOADING_WIN = {"recap_loading", HN_GetWin_RecapLoading, HN_DesWin_RecapLoading, HN_ReadyWin_RecapLoading};
 
 static Window *current_window = NULL;
 static HN_Win *current_hn_window = NULL;

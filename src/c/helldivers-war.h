@@ -11,6 +11,7 @@ typedef struct
 
 extern HN_Win HN_LOADING_WIN;
 extern HN_Win HN_FAILED_CONNECT_WIN;
+extern HN_Win HN_RECAP_LOADING_WIN;
 extern GFont HN_Font1;
 extern GFont HN_Font2;
 
