@@ -1,5 +1,6 @@
 //@ts- check
 const env = require("./env");
+const convert = require('./convert');
 // https://helldivers.bot/docs/api
 const api = "https://helldivers.bot/api/";
 
@@ -30,14 +31,24 @@ function onMessage(event) {
         switch (key) {
             case "HBPing":
                 console.log("Pinging!");
-                const req = new XMLHttpRequest();
-                req.onload = function() {
+                var req = new XMLHttpRequest();
+                req.onload = function () {
                     console.log(`Seems like helldivers bot is online; got ${this.responseType}`)
-
-                    sendMessage({"HBPing": 1})
+                    sendMessage({ "HBPing": 1 })
                 }
 
                 req.open("HEAD", api + "h1/campaign");
+                req.send();
+                break;
+                
+            case "HBMapUpdated":
+                console.log("Getting most recent map data...");
+                var req = new XMLHttpRequest();
+                req.onload = function () {
+                    convert.convertJsonToHNMapData(JSON.parse(this.responseText))
+                }
+                req.open("GET", api + "v1/h1/map");
+                req.setRequestHeader("Authorization", "Bearer " + env.api_key)
                 req.send();
                 break;
 

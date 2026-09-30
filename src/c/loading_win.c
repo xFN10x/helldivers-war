@@ -1,6 +1,7 @@
 #include <pebble.h>
 
 #include "helldivers-war.h"
+#include "messages.h"
 
 #define DELTA 30
 
@@ -33,14 +34,14 @@ static void render_ani_vec_animated(Layer *layer, GContext *ctx)
 
     GRect bounds = layer_get_bounds(layer);
     GSize seq_bounds = gdraw_command_sequence_get_bounds_size(loading_bg_animated_draw);
-    
+
     // Get the next frame
     GDrawCommandFrame *frame = gdraw_command_sequence_get_frame_by_index(loading_bg_animated_draw, aniIndex);
 
     // If another frame was found, draw it
     if (frame)
     {
-        //gdraw_command_sequence_set_bounds_size(loading_bg_animated_draw, GSize(i0 * 10,300));
+        // gdraw_command_sequence_set_bounds_size(loading_bg_animated_draw, GSize(i0 * 10,300));
         gdraw_command_frame_draw(ctx, loading_bg_animated_draw, frame, GPoint((bounds.size.w - seq_bounds.w) / 2, (bounds.size.h - seq_bounds.h) / 2));
     };
 
@@ -125,27 +126,17 @@ void HN_Win_Loading_JSReady()
     if (gave_up)
         return;
     app_timer_reschedule(timeout_timer, 10 * 1000);
-    DictionaryIterator *pingReq;
 
-    AppMessageResult resBegin = app_message_outbox_begin(&pingReq);
-    if (resBegin == APP_MSG_OK)
-    {
-        int val = 1;
-        dict_write_int(pingReq, MESSAGE_KEY_HBPing, &val, sizeof(int), true);
-
-        app_message_outbox_send();
-        APP_LOG(APP_LOG_LEVEL_ERROR, "Sent Helldivers Bot ping req...");
-    }
-    else
-    {
-        APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to open outbox! %d", resBegin);
-        window_stack_pop_all(true);
-    }
+    DictionaryIterator *pingReq = HN_StartMsg();
+    int val = 1;
+    dict_write_int(pingReq, MESSAGE_KEY_HBPing, &val, sizeof(int), true);
+    HN_SendMsg(pingReq);
 }
 
 /// @brief Called when the window is removed
 void HN_DesWin_Loading(Window *window)
 {
+    if (aniTimer) app_timer_cancel(aniTimer);
     gave_up = true;
     layer_destroy(loading_bg_layer);
     bitmap_layer_destroy(loading_text_layer);

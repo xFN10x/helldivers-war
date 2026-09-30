@@ -1,15 +1,18 @@
 #include <pebble.h>
 
 #include "helldivers-war.h"
+#include "messages.h"
+#include "storage.h"
 
 #define DELTA 15
 
 static Layer *animation_layer;
-static TextLayer * text;
+static TextLayer *text;
 static GDrawCommandSequence *animation_animated_draw;
 static AppTimer *aniTimer;
-static int aniIndex;
+static int aniIndex = 0;
 static Window *this;
+static Animation *rawAni;
 
 static void next_frame_handler(void *context)
 {
@@ -61,22 +64,24 @@ void HN_GetWin_RecapLoading(Window *window)
         return;
     }
 
-    text = text_layer_create(GRect(0,104,200,0));
+    text = text_layer_create(GRect(0, 104, 100, 0));
     text_layer_set_text(text, "RECAP");
     text_layer_set_text_alignment(text, GTextAlignmentCenter);
     text_layer_set_font(text, HN_Font1);
     text_layer_set_background_color(text, GColorYellow);
     text_layer_set_text_color(text, GColorBlack);
 
-    GRect start = GRect(0, 102, 200, 0);
-    GRect end = GRect(0, 102, 200, 22);
+    // layer_set_frame(text_layer_get_layer(text), GRect(0,104,200,15));
+
+    GRect start = GRect(-100, 102, 100, 22);
+    GRect end = GRect(50, 102, 100, 22);
 
     PropertyAnimation *ani = property_animation_create_layer_frame(text_layer_get_layer(text), &start, &end);
-    Animation *rawAni = property_animation_get_animation(ani);
+    rawAni = property_animation_get_animation(ani);
 
-    animation_set_curve(rawAni, AnimationCurveLinear);
+    animation_set_curve(rawAni, AnimationCurveEaseOut);
     animation_set_delay(rawAni, 1000);
-    animation_set_duration(rawAni, 500);
+    animation_set_duration(rawAni, 250);
 
     animation_layer = layer_create(wbounds);
     layer_set_update_proc(animation_layer, render_ani_vec_animated);
@@ -85,11 +90,27 @@ void HN_GetWin_RecapLoading(Window *window)
     layer_add_child(wlayer, text_layer_get_layer(text));
 
     aniTimer = app_timer_register(DELTA, next_frame_handler, NULL);
-    animation_schedule(rawAni);
 }
 
 void HN_ReadyWin_RecapLoading()
 {
+    APP_LOG(APP_LOG_LEVEL_INFO, "Seeing if map is updated...");
+    DictionaryIterator *mapUpdatedMsg = HN_StartMsg();
+    void *mapData = malloc(sizeof(HN_MapData));
+    if (persist_exists(HN_STORKEY_MAPCACHE))
+        persist_read_data(HN_STORKEY_MAPCACHE, mapData, sizeof(HN_MapData));
+
+    dict_write_data(mapUpdatedMsg, MESSAGE_KEY_HBMapUpdated, mapData, sizeof(HN_MapData));
+    HN_SendMsg(mapUpdatedMsg);
+}
+
+void HN_NoRecap()
+{
+}
+
+void HN_RecapContinue()
+{
+    animation_schedule(rawAni);
 }
 
 /// @brief Called when the window is removed

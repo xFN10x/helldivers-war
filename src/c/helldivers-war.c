@@ -16,6 +16,8 @@ static HN_Win *current_hn_window = NULL;
 GFont HN_Font1;
 GFont HN_Font2;
 
+int HN_STORKEY_MAPCACHE = 0;
+
 void HN_SwitchWin(HN_Win *hnwin, const bool animated)
 {
   APP_LOG(APP_LOG_LEVEL_INFO, "Switching win: %s", hnwin->name);
