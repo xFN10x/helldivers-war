@@ -13,7 +13,7 @@ typedef struct HN_MapData
     //                       unused
     //                       /| | |
     //0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0
-    //1 2 3 4 5 6 7 8 9 1 1       └ attacking
+    //1 2 3 4 5 6 7 8 9 1 1         └ attacking
     //                  0 1 
     uint32_t bugMax; //96
     uint32_t bugPoints; // 128
