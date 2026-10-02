@@ -96,11 +96,27 @@ void HN_ReadyWin_RecapLoading()
 {
     APP_LOG(APP_LOG_LEVEL_INFO, "Seeing if map is updated...");
     DictionaryIterator *mapUpdatedMsg = HN_StartMsg();
-    void *mapData = malloc(sizeof(HN_MapData));
-    if (persist_exists(HN_STORKEY_MAPCACHE))
-        persist_read_data(HN_STORKEY_MAPCACHE, mapData, sizeof(HN_MapData));
+    struct HN_MapData mapData = {
+        0,
 
-    dict_write_data(mapUpdatedMsg, MESSAGE_KEY_HBMapUpdated, mapData, sizeof(HN_MapData));
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+        0
+    };//= malloc(sizeof(HN_MapData));
+    if (persist_exists(HN_STORKEY_MAPCACHE))
+        persist_read_data(HN_STORKEY_MAPCACHE, &mapData, sizeof(HN_MapData));
+
+    dict_write_data(mapUpdatedMsg, MESSAGE_KEY_HBMapUpdated, (void *)&mapData, sizeof(HN_MapData));
     HN_SendMsg(mapUpdatedMsg);
 }
 

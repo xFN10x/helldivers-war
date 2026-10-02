@@ -63,4 +63,4 @@ export type HBMap = {
 }
 
 
-declare var Pebble: any
+export type Pebble = any
