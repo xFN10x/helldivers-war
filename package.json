@@ -59,6 +59,37 @@
           "type": "raw",
           "name": "RECAP_ANI",
           "file": "loading_trans.pdc"
+        },
+        {
+          "type": "bitmap",
+          "name": "BUGS_ICON",
+          "file": "factions/bugs.png",
+          "memoryFormat": "Smallest",
+          "spaceOptimization": "memory"
+        },
+        {
+          "type": "bitmap",
+          "name": "BOTS_ICON",
+          "file": "factions/cyborgs.png",
+          "memoryFormat": "Smallest",
+          "spaceOptimization": "memory"
+        },
+        {
+          "type": "bitmap",
+          "name": "ILLUMINATES_ICON",
+          "file": "factions/illumanates.png",
+          "memoryFormat": "Smallest",
+          "spaceOptimization": "memory"
+        },
+        {
+          "type": "raw",
+          "name": "MAP",
+          "file": "map.pdc"
+        },
+        {
+          "type": "raw",
+          "name": "RECAP_FORE",
+          "file": "recap_area.pdc"
         }
       ]
     }

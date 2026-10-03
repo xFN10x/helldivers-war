@@ -1,11 +1,10 @@
 #include <pebble.h>
 
-static Layer *bug_map_layer;
-static Layer *cyborg_map_layer;
-static Layer *illum_map_layer;
-static TextLayer *text;
+static Layer *map_layer;
+
+static Layer *foreground_layer;
+
 static Window *this;
-static Animation *rawAni;
 
 void HN_GetWin_Recap(Window *window) {
 
