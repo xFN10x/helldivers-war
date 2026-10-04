@@ -29,3 +29,4 @@ typedef struct HN_MapData
     uint32_t superEarthPoints; //320
 } HN_MapData;
 
+extern struct HN_MapData HN_MAPDATA_TEST;

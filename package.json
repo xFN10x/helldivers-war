@@ -60,6 +60,7 @@
           "name": "RECAP_ANI",
           "file": "loading_trans.pdc"
         },
+
         {
           "type": "bitmap",
           "name": "BUGS_ICON",
@@ -81,6 +82,7 @@
           "memoryFormat": "Smallest",
           "spaceOptimization": "memory"
         },
+        
         {
           "type": "raw",
           "name": "MAP",

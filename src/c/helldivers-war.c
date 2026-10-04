@@ -1,14 +1,17 @@
 #include <pebble.h>
 
-#include "helldivers-war.h"
 #include "loading_win.h"
 #include "failed_connect_win.h"
 #include "recap_loading_win.h"
-#include "messages.h"
+#include "recap_win.h"
 
-HN_Win HN_LOADING_WIN = {"loading_win", HN_GetWin_Loading, HN_DesWin_Loading, HN_ReadyWin_Loading};
-HN_Win HN_FAILED_CONNECT_WIN = {"failed_connect_win", HN_GetWin_FailedConnec, HN_DesWin_FailedConnec, HN_ReadyWin_FailedConnec};
-HN_Win HN_RECAP_LOADING_WIN = {"recap_loading", HN_GetWin_RecapLoading, HN_DesWin_RecapLoading, HN_ReadyWin_RecapLoading};
+#include "messages.h"
+#include "helldivers-war.h"
+
+HN_Win HN_LOADING_WIN = {"loading_win", HN_GetWin_Loading, HN_DesWin_Loading, HN_ReadyWin_Loading, NULL};
+HN_Win HN_FAILED_CONNECT_WIN = {"failed_connect_win", HN_GetWin_FailedConnec, HN_DesWin_FailedConnec, HN_ReadyWin_FailedConnec, NULL};
+HN_Win HN_RECAP_LOADING_WIN = {"recap_loading", HN_GetWin_RecapLoading, HN_DesWin_RecapLoading, HN_ReadyWin_RecapLoading, NULL};
+HN_Win HN_RECAP_WIN = {"recap", HN_GetWin_Recap, HN_DesWin_Recap, HN_ReadyWin_Recap, HN_ClickProvWin_Recap};
 
 static Window *current_window = NULL;
 static HN_Win *current_hn_window = NULL;
@@ -22,6 +25,11 @@ void HN_SwitchWin(HN_Win *hnwin, const bool animated)
 {
   APP_LOG(APP_LOG_LEVEL_INFO, "Switching win: %s", hnwin->name);
   Window *building = window_create();
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Click prov is: %i", hnwin->clickProvider == NULL);
+  if (hnwin->clickProvider)
+  {
+    window_set_click_config_provider(building, hnwin->clickProvider);
+  }
   // window_set_click_config_provider(s_window, prv_click_config_provider);
   window_set_window_handlers(building, (WindowHandlers){
                                            .load = hnwin->create,
@@ -33,6 +41,7 @@ void HN_SwitchWin(HN_Win *hnwin, const bool animated)
     APP_LOG(APP_LOG_LEVEL_INFO, "Removing last win: %s", current_hn_window->name);
     window_stack_remove(current_window, true);
   }
+
   current_window = building;
   current_hn_window = hnwin;
   hnwin->ready();

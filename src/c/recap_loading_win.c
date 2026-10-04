@@ -80,7 +80,6 @@ void HN_GetWin_RecapLoading(Window *window)
     rawAni = property_animation_get_animation(ani);
 
     animation_set_curve(rawAni, AnimationCurveEaseOut);
-    animation_set_delay(rawAni, 1000);
     animation_set_duration(rawAni, 250);
 
     animation_layer = layer_create(wbounds);
@@ -124,10 +123,17 @@ void HN_NoRecap()
 {
 }
 
+static void next(void* data) {
+    HN_SwitchWin(&HN_RECAP_WIN,true);
+}
+
 void HN_RecapContinue()
 {
     animation_schedule(rawAni);
+    app_timer_register(2000, next, NULL);
 }
+
+
 
 /// @brief Called when the window is removed
 void HN_DesWin_RecapLoading(Window *window)
