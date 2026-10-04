@@ -65,19 +65,33 @@ function onMessage(event) {
                     console.log("New Bots is: " + (hndata[2]))
                     console.log("Illum is: " + (illum))
                     console.log("New Illum is: " + (hndata[3]))
-                    
+
                     const changed = (season != resData.season ||
                         bugs != hndata[1] ||
                         bots != hndata[2] ||
                         illum != hndata[3]
                     )
-                    sendMessage({"HBMapUpdated": changed})
+                    sendMessage({ "HBMapUpdated": changed })
                 }
                 req.open("GET", api + "v1/h1/map");
                 req.setRequestHeader("Authorization", "Bearer " + env.api_key)
                 req.send();
                 break;
+            case "HNGetCurrentMap":
+                console.log("Getting most recent map data...");
+                var req = new XMLHttpRequest();
+                req.onload = function () {
+                    let json = dict[key]
+                    /**@type {import("./").HBMap} */
+                    let res = JSON.parse(this.responseText)
+                    const hndata = convert.convertJsonToHNMapData_bytes(JSON.parse(this.responseText));
 
+                    sendMessage({ "HNGetCurrentMap": hndata })
+                }
+                req.open("GET", api + "v1/h1/map");
+                req.setRequestHeader("Authorization", "Bearer " + env.api_key)
+                req.send();
+                break;
             default:
                 break;
         }

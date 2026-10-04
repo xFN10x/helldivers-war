@@ -2,6 +2,26 @@
 
 /** @param {import("./").HBMap} */
 function convertJsonToHNMapData(obj) {
+    const data = _convertJsonToHNMapData(obj);
+    const array = Array.from(data[0]).concat(Array.from(data[1]));
+    console.log(JSON.stringify(array))
+    return array;
+}
+
+/** @param {import("./").HBMap} */
+function convertJsonToHNMapData_bytes(obj) {
+    const data = _convertJsonToHNMapData(obj);
+    const mapdata0 = data[0]
+    const mapdata1 = data[1]
+    const mapdata0bytes = new Uint8Array(mapdata0.buffer, mapdata0.byteOffset, mapdata0.byteLength)
+    const mapdata1bytes = new Uint8Array(mapdata1.buffer, mapdata1.byteOffset, mapdata1.byteLength)
+    const array = Array.from(mapdata0bytes).concat(Array.from(mapdata1bytes));
+    console.log(JSON.stringify(array))
+    return array;
+}
+
+/** @param {import("./").HBMap} */
+function _convertJsonToHNMapData(obj) {
     const json = obj.data;
     const mapData0 = new Uint16Array(4)
     const mapData1 = new Uint32Array(8)
@@ -71,7 +91,7 @@ function convertJsonToHNMapData(obj) {
 
     mapData1[0] = bugPointsMax;
     mapData1[1] = bugPointsTaken;
-    
+
     mapData1[2] = botPointsMax;
     mapData1[3] = botPointsTaken;
 
@@ -81,9 +101,11 @@ function convertJsonToHNMapData(obj) {
     mapData1[6] = json.fronts.superEarth[0].pointsMax;
     mapData1[7] = json.fronts.superEarth[0].points;
 
-    const array = Array.from(mapData0).concat(Array.from(mapData1));
-    console.log(JSON.stringify(array))
-    return array;
+    let returning = {}
+    returning[0] = mapData0;
+    returning[1] = mapData1;
+    return returning;
 }
 
 module.exports.convertJsonToHNMapData = convertJsonToHNMapData;
+module.exports.convertJsonToHNMapData_bytes = convertJsonToHNMapData_bytes;

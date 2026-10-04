@@ -22,7 +22,8 @@
       "ready",
       "HBPing",
       "HBMapUpdated",
-      "HBJson"
+      "HBJson",
+      "HNGetCurrentMap"
     ],
     "resources": {
       "media": [

@@ -3,6 +3,8 @@
 #include "helldivers-war.h"
 #include "loading_win.h"
 #include "recap_loading_win.h"
+#include "recap_win.h"
+#include "storage.h"
 
 static void message_recieved(DictionaryIterator *iterator, void *context)
 {
@@ -10,6 +12,7 @@ static void message_recieved(DictionaryIterator *iterator, void *context)
     Tuple *ready = dict_find(iterator, MESSAGE_KEY_ready);
     Tuple *HBPing = dict_find(iterator, MESSAGE_KEY_HBPing);
     Tuple *HBMapUpdated = dict_find(iterator, MESSAGE_KEY_HBMapUpdated);
+    Tuple *HNGetCurrentMap = dict_find(iterator, MESSAGE_KEY_HNGetCurrentMap);
 
     if (ready)
     {
@@ -29,6 +32,12 @@ static void message_recieved(DictionaryIterator *iterator, void *context)
         {
             HN_NoRecap();
         }
+    }
+    else if (HNGetCurrentMap)
+    {
+        HN_MapData *data = (HN_MapData *)HNGetCurrentMap->value->data;
+        APP_LOG(APP_LOG_LEVEL_INFO, "Got map data, for war %i", data->war);
+        HN_DoRecap(data);
     }
 }
 

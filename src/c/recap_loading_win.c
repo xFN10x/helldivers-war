@@ -95,23 +95,7 @@ void HN_ReadyWin_RecapLoading()
 {
     APP_LOG(APP_LOG_LEVEL_INFO, "Seeing if map is updated...");
     DictionaryIterator *mapUpdatedMsg = HN_StartMsg();
-    struct HN_MapData mapData = {
-        0,
-
-        0,
-        0,
-        0,
-
-        0,
-        0,
-        0,
-        0,
-
-        0,
-        0,
-        0,
-        0
-    };//= malloc(sizeof(HN_MapData));
+    struct HN_MapData mapData = HN_MAPDATA_START;
     if (persist_exists(HN_STORKEY_MAPCACHE))
         persist_read_data(HN_STORKEY_MAPCACHE, &mapData, sizeof(HN_MapData));
 
@@ -138,6 +122,11 @@ void HN_RecapContinue()
 /// @brief Called when the window is removed
 void HN_DesWin_RecapLoading(Window *window)
 {
+    if (aniTimer)
+    {
+        app_timer_cancel(aniTimer);
+        aniTimer = NULL;
+    }
     layer_destroy(animation_layer);
     text_layer_destroy(text);
     gdraw_command_sequence_destroy(animation_animated_draw);
