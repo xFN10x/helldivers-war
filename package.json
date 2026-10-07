@@ -83,7 +83,13 @@
           "memoryFormat": "Smallest",
           "spaceOptimization": "memory"
         },
-        
+        {
+          "type": "bitmap",
+          "name": "SUPEREARTH_ICON",
+          "file": "factions/superearth.png",
+          "memoryFormat": "Smallest",
+          "spaceOptimization": "memory"
+        },
         {
           "type": "raw",
           "name": "MAP",

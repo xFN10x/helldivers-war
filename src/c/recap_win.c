@@ -3,6 +3,7 @@
 #include "storage.h"
 #include "helldivers-war.h"
 #include "messages.h"
+#include "recap_win.h"
 
 static Layer *map_layer;
 static GDrawCommandImage *map_image;
@@ -13,11 +14,17 @@ static Layer *foreground_layer;
 static GDrawCommandImage *foreground_image;
 static Animation *foreground_animation;
 
+static BitmapLayer *faction_icon_bg_layer;
+static GBitmap *bugs_icon_bitmap;
+static GBitmap *bots_icon_bitmap;
+static GBitmap *illuminate_icon_bitmap;
+static GBitmap *superearth_icon_bitmap;
+
 static Window *this;
 
 static bool showing_set = false;
-static struct HN_MapData showing;
-static struct HN_MapData subject;
+static HN_MapData *showing;
+static HN_MapData subject;
 
 static int selected_sector = 33;
 static int16_t sector_offsets[34][2];
@@ -28,6 +35,15 @@ static int16_t sector_offset_y = 0;
 static float __current_sector_offset_x = -60;
 static float __current_sector_offset_y = -60;
 
+static AppTimer *recap_timer;
+
+static struct RecapTimerData bugRecapTimerData;
+static struct RecapTimerData botRecapTimerData;
+static struct RecapTimerData illuminateRecapTimerData;
+static uint16_t bugsRecapArray[13];
+static uint16_t botsRecapArray[13];
+static uint16_t illumRecapArray[13];
+
 // Source - https://stackoverflow.com/a/4353537
 // Posted by aioobe, modified by community. See post 'Timeline' for change history
 // Retrieved 2026-10-03, License - CC BY-SA 4.0
@@ -37,39 +53,47 @@ static float lerp(float a, float b, float f)
     return a * (1.0 - f) + (b * f);
 }
 
-static void get_interp_data(uint16_t start, uint16_t end, uint16_t *output)
+static size_t get_interp_data(uint16_t start, uint16_t end, uint16_t *output)
 {
     // 0b1111 1000 0000 0000 start
     // 0b1110 0000 0000 0000 end
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Geting interp of start and end of recap, start: %u, end: %u", start, end);
     start = (start >> 1) << 1;
     end = (end >> 1) << 1;
-    if (start > end)
+    bool reved = false;
+    if (start <= end)
     {
-        int i = 0;
-        while (start != end)
-        {
-            output[i] = start;
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "Map start: %u", start);
-            start = (start << 1);
-            i++;
-        }
-    }
-    else
-    {
-        int i = 0;
         uint16_t acstart = start;
         uint16_t acen = end;
         start = acen;
         end = acstart;
-        while (start != end)
-        {
-            output[i] = start;
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "Map start: %u", start);
-            start = (start << 1);
-            i++;
-        }
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "SWAPPED, start: %u, end: %u", start, end);
+        reved = true;
     }
+
+    int i = 0;
+    while (start >= end)
+    {
+        output[i] = start;
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "Map start: %u (%i)", start, i);
+        i++;
+        if (start << 1 == start)
+            break;
+        start = (start << 1);
+    }
+    if (reved)
+    {
+        uint16_t reversed[13];
+        for (int i2 = 0; i2 < i; i2++)
+        {
+            int newI = (i - 1) - i2;
+            reversed[newI] = output[i2];
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "Swapped: %u (%i) -> %u (%i)", output[i2], i2, reversed[newI], newI);
+        }
+        memcpy(output, reversed, sizeof(uint16_t) * 12);
+    }
+
+    return i;
 }
 
 // set this when sector_offset is 0,0
@@ -148,7 +172,7 @@ static bool update_map_commands(GDrawCommand *command, uint32_t index, void *con
         {
             APP_LOG(APP_LOG_LEVEL_DEBUG, "Front is bugs");
         }
-        current_front = showing.bugs;
+        current_front = showing->bugs;
     }
     else if (index < 22)
     {
@@ -156,7 +180,7 @@ static bool update_map_commands(GDrawCommand *command, uint32_t index, void *con
         {
             APP_LOG(APP_LOG_LEVEL_DEBUG, "Front is bots");
         }
-        current_front = showing.bots;
+        current_front = showing->bots;
     }
     else if (index < 33)
     {
@@ -164,13 +188,13 @@ static bool update_map_commands(GDrawCommand *command, uint32_t index, void *con
         {
             APP_LOG(APP_LOG_LEVEL_DEBUG, "Front is illum");
         }
-        current_front = showing.illum;
+        current_front = showing->illum;
     }
     else
     {
         // this is super earth
         APP_LOG(APP_LOG_LEVEL_DEBUG, "Front is OUR HOME");
-        gdraw_command_set_fill_color(command, showing.superEarthPoints >= showing.superEarthMax ? GColorArmyGreen : GColorRed);
+        gdraw_command_set_fill_color(command, showing->superEarthPoints >= showing->superEarthMax ? GColorArmyGreen : GColorRed);
         return true;
     }
     if (log)
@@ -201,14 +225,39 @@ static void render_foreground(Layer *layer, GContext *ctx)
 
 static void change_sector(int sec)
 {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "changed sector %i (%i, %i)", selected_sector, sector_offset_x, sector_offset_y);
+    sec--;
     if (sec > 33)
-        sec = 0;
+        sec = 33;
     if (sec < 0)
         sec = 33;
     selected_sector = sec;
     sector_offset_x = sector_offsets[selected_sector][0];
     sector_offset_y = sector_offsets[selected_sector][1];
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "changed sector %i (%i, %i)", selected_sector, sector_offset_x, sector_offset_y);
+
+    if (selected_sector < 11)
+    {
+        // bug
+        bitmap_layer_set_background_color(faction_icon_bg_layer, GColorWindsorTan);
+        bitmap_layer_set_bitmap(faction_icon_bg_layer, bugs_icon_bitmap);
+    }
+    else if (selected_sector < 22)
+    {
+        // cyborg
+        bitmap_layer_set_background_color(faction_icon_bg_layer, GColorBulgarianRose);
+        bitmap_layer_set_bitmap(faction_icon_bg_layer, bots_icon_bitmap);
+    }
+    else if (selected_sector < 33)
+    {
+        // illum
+        bitmap_layer_set_background_color(faction_icon_bg_layer, GColorPictonBlue);
+        bitmap_layer_set_bitmap(faction_icon_bg_layer, illuminate_icon_bitmap);
+    }
+    else
+    {
+        bitmap_layer_set_background_color(faction_icon_bg_layer, GColorCobaltBlue);
+        bitmap_layer_set_bitmap(faction_icon_bg_layer, superearth_icon_bitmap);
+    }
 }
 
 static void render_map(Layer *layer, GContext *ctx)
@@ -260,21 +309,24 @@ static void check_map_updated(void *data)
     bool log = false;
     if (__current_sector_offset_x != sector_offset_x || __current_sector_offset_y != sector_offset_y)
 
-        if (log) APP_LOG(APP_LOG_LEVEL_DEBUG, "different pos");
+        if (log)
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "different pos");
     if (__current_sector_offset_x != sector_offset_x)
     {
         __current_sector_offset_x = lerp(__current_sector_offset_x, sector_offset_x, 0.5f);
-        if (log) APP_LOG(APP_LOG_LEVEL_DEBUG, "Moved map x to: %i (%i)", (int)__current_sector_offset_x, sector_offset_x);
+        if (log)
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "Moved map x to: %i (%i)", (int)__current_sector_offset_x, sector_offset_x);
     }
 
     if (__current_sector_offset_y != sector_offset_y)
     {
         __current_sector_offset_y = lerp(__current_sector_offset_y, sector_offset_y, 0.5f);
-        if (log) APP_LOG(APP_LOG_LEVEL_DEBUG, "Moved map y to: %i (%i)", (int)__current_sector_offset_y, sector_offset_y);
+        if (log)
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "Moved map y to: %i (%i)", (int)__current_sector_offset_y, sector_offset_y);
     }
 
     // APP_LOG(APP_LOG_LEVEL_INFO, "Map image size is %ix%i", bounds.w, bounds.h);
-    layer_set_frame(map_layer, GRect((-__current_sector_offset_x) + 100, (-__current_sector_offset_y) + 60, map_bounds.w, map_bounds.h));
+    layer_set_frame(map_layer, GRect((-__current_sector_offset_x) + 100, (-__current_sector_offset_y) + 100, map_bounds.w, map_bounds.h));
     map_check_timer = app_timer_register(3, check_map_updated, NULL);
 }
 
@@ -288,11 +340,14 @@ void HN_ClickProvWin_Recap(void *context)
 void HN_GetWin_Recap(Window *window)
 {
     this = window;
-
+    HN_MapData *test = NULL;
     if (persist_exists(HN_STORKEY_MAPCACHE))
-        persist_read_data(HN_STORKEY_MAPCACHE, &showing, sizeof(HN_MapData));
+    {
+        persist_read_data(HN_STORKEY_MAPCACHE, test, sizeof(HN_MapData));
+        showing = test;
+    }
     else
-        showing = HN_MAPDATA_START;
+        showing = &HN_MAPDATA_START;
 
     Layer *wlayer = window_get_root_layer(window);
     GRect wbounds = layer_get_bounds(wlayer);
@@ -316,8 +371,17 @@ void HN_GetWin_Recap(Window *window)
     animation_set_delay(foreground_animation, 2000);
     animation_set_duration(foreground_animation, 250);
 
+    bugs_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_BUGS_ICON);
+    bots_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_BOTS_ICON);
+    illuminate_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ILLUMINATES_ICON);
+    superearth_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_SUPEREARTH_ICON);
+
+    faction_icon_bg_layer = bitmap_layer_create(GRect(0, 0, 200, 228));
+    bitmap_layer_set_compositing_mode(faction_icon_bg_layer, GCompOpSet);
+
     map_check_timer = app_timer_register(3, check_map_updated, NULL);
 
+    layer_add_child(wlayer, bitmap_layer_get_layer(faction_icon_bg_layer));
     layer_add_child(wlayer, map_layer);
     layer_add_child(wlayer, foreground_layer);
 }
@@ -334,20 +398,113 @@ void HN_ReadyWin_Recap()
     HN_SendMsg(mapUpdatedMsg);
 }
 
+int getSectorByData(uint16_t data)
+{
+    //removes the attacking bit, and then limits the max to 11 sectors, because this isn't counter super earth as the 0th
+    data = (data >> 1) << 1;
+    data = data & ~0b0000000000010000;
+    for (int i = 11; i >= 0; i--)
+    {
+        uint16_t mask = (0b1111111111100000 << i);
+        if (!(data ^ mask))
+        {
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "Data: %u is sector: %u", data, 11 - i);
+            return 11 - i;
+        }
+    }
+
+    return -1;
+}
+
+static void change_showing(HN_MapData *change)
+{
+    showing = change;
+
+    showing_set = false;
+}
+
+void show_recap_for_front(void *data)
+{
+    RecapTimerData *timerData = (RecapTimerData *)data;
+    // APP_LOG(APP_LOG_LEVEL_DEBUG, "index: %zu, len: %zu", timerData->index, timerData->length);
+    if (timerData->index >= timerData->length)
+    {
+        if (timerData->next != NULL)
+            recap_timer = app_timer_register(2000, show_recap_for_front, timerData->next);
+        return;
+    }
+    uint16_t mapData = timerData->array[timerData->index];
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "-- Showing recap... index: %zu + %zu, data: %u", timerData->index,timerData->sector_offset, mapData);
+    int sector = getSectorByData(mapData);
+    //if (timerData->index >=12) sector = 34;
+    if (sector != 34)
+        sector += timerData->sector_offset;
+    change_sector(sector);
+
+    *(timerData->sector_data_to_change) = mapData;
+    showing_set = false;
+
+    timerData->index += 1;
+    recap_timer = app_timer_register(2000, show_recap_for_front, data);
+}
+
 void HN_DoRecap(HN_MapData *end)
 {
-    uint16_t bugsarry[11];
-    uint16_t botsarry[11];
-    uint16_t illumarry[11];
 
-    get_interp_data(showing.bugs, end->bugs, bugsarry);
-    get_interp_data(showing.bots, end->bots, botsarry);
-    get_interp_data(showing.illum, end->illum, illumarry);
+    size_t bugsarrylen = get_interp_data(showing->bugs, end->bugs, bugsRecapArray);
+    size_t botsarrylen = get_interp_data(showing->bots, end->bots, botsRecapArray);
+    size_t illumarrylen = get_interp_data(showing->illum, end->illum, illumRecapArray);
+    /*size_t bugsarrylen = get_interp_data(0b1111111111110000, 0, bugsRecapArray);
+    size_t botsarrylen = get_interp_data(0b1111111111110000, 0, botsRecapArray);
+    size_t illumarrylen = get_interp_data(0b1111111111110000, 0, illumRecapArray);*/
+
+    illuminateRecapTimerData = (RecapTimerData){
+        .index = 0,
+        .length = illumarrylen,
+        .array = illumRecapArray,
+        .capitals = HN_illumPlanetNames,
+        .regions = HN_illumRegionNames,
+        .sector_offset = 22,
+        .sector_data_to_change = &showing->illum,
+        .next = NULL};
+
+    botRecapTimerData = (RecapTimerData){
+        .index = 0,
+        .length = botsarrylen,
+        .array = botsRecapArray,
+        .capitals = HN_botPlanetNames,
+        .regions = HN_botRegionNames,
+        .sector_offset = 11,
+        .sector_data_to_change = &showing->bots,
+        .next = &illuminateRecapTimerData};
+
+    bugRecapTimerData = (RecapTimerData){
+        .index = 0,
+        .length = bugsarrylen,
+        .array = bugsRecapArray,
+        .capitals = HN_bugPlanetNames,
+        .regions = HN_bugRegionNames,
+        .sector_offset = 0,
+        .sector_data_to_change = &showing->bugs,
+        .next = &botRecapTimerData};
+
+    recap_timer = app_timer_register(2000, show_recap_for_front, &bugRecapTimerData);
 }
 
 /// @brief Called when the window is removed
 void HN_DesWin_Recap(Window *window)
 {
-    gdraw_command_image_destroy(map_image);
     layer_destroy(map_layer);
+    gdraw_command_image_destroy(map_image);
+
+    layer_destroy(foreground_layer);
+    gdraw_command_image_destroy(foreground_image);
+    if (foreground_animation)
+    animation_destroy(foreground_animation);
+
+    bitmap_layer_destroy(faction_icon_bg_layer);
+    gbitmap_destroy(bugs_icon_bitmap);
+    gbitmap_destroy(bots_icon_bitmap);
+    gbitmap_destroy(illuminate_icon_bitmap);
+    gbitmap_destroy(superearth_icon_bitmap);
 }

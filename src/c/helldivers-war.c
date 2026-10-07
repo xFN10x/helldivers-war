@@ -19,6 +19,90 @@ static HN_Win *current_hn_window = NULL;
 GFont HN_Font1;
 GFont HN_Font2;
 
+char *HN_bugRegionNames[11] = {
+  "Wise Region",
+  "Kruger System",
+  "Ross System",
+  "Struve Region",
+  "Xi Tauri Region",
+  "Cancri System",
+  "Higgs Region",
+  "Hawking Region",
+  "Rigel System",
+  "Aurigae Region",
+  "Kepler System"
+};
+
+char *HN_bugPlanetNames[11] = {
+  "New New York",
+  "Liberty City",
+  "Tiberia",
+  "Northman's Creek",
+  "New Haven",
+  "Freedom Fortress",
+  "Martyr's Bay",
+  "Segma Prime",
+  "Freedom Peak",
+  "Final Frontier",
+  "Kepler Prime"
+};
+
+char *HN_botRegionNames[11] = {
+  "Sirius Region",
+  "Polaris Region",
+  "Pictor Sector",
+  "Sagan Region",
+  "Horolium System",
+  "Gellert Region",
+  "Lacaille Region",
+  "Indi System",
+  "Ceti System",
+  "Cygni Region",
+  "Cyberstan Region"
+};
+
+char *HN_botPlanetNames[11] = {
+  "Stockholm City",
+  "Thunder Head",
+  "New Moscow",
+  "Highwind",
+  "Providence",
+  "Gellert City",
+  "Bahia Democracia",
+  "Winter Hold",
+  "Doral Creek",
+  "New Berlin",
+  "Cyberstan"
+};
+
+char *HN_illumRegionNames[11] = {
+  "Centaury Region",
+  "Barnard Region",
+  "Procyon Region",
+  "Castor System",
+  "Orionis Region",
+  "Prometheus System",
+  "Cassiopaiae Region",
+  "Ursa Region",
+  "Canes Region",
+  "Arcturus Region",
+  "Squ'bai System"
+};
+
+char *HN_illumPlanetNames[11] = {
+  "New Hanover",
+  "Iron Tower",
+  "White Landing",
+  "Justice Bay",
+  "New Alexandria",
+  "Ribatishiti",
+  "Dal Rage",
+  "Ultima",
+  "Jiyu Toshi",
+  "Hawk Nest",
+  "Squ'bai Shrine"
+};
+
 int HN_STORKEY_MAPCACHE = 0;
 
 void HN_SwitchWin(HN_Win *hnwin, const bool animated)
