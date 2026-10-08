@@ -286,9 +286,10 @@ static void set_sector_offsets()
 }
 
 /*float scale = 1;*/
-static void up_pressed(ClickRecognizerRef recognizer, void *context)
+static void select_pressed(ClickRecognizerRef recognizer, void *context)
 {
-    change_sector(selected_sector + 1);
+    if (recap_timer)
+        app_timer_reschedule(recap_timer, 0);
 }
 
 /*static void down_pressed(ClickRecognizerRef recognizer, void *context)
@@ -332,7 +333,7 @@ static void check_map_updated(void *data)
 
 void HN_ClickProvWin_Recap(void *context)
 {
-    // window_single_click_subscribe(BUTTON_ID_SELECT, up_pressed);
+    window_single_click_subscribe(BUTTON_ID_SELECT, select_pressed);
     //  window_single_click_subscribe(BUTTON_ID_DOWN, down_pressed);
     //   window_single_click_subscribe(BUTTON_ID_BACK, cls);
 }
@@ -400,7 +401,7 @@ void HN_ReadyWin_Recap()
 
 int getSectorByData(uint16_t data)
 {
-    //removes the attacking bit, and then limits the max to 11 sectors, because this isn't counter super earth as the 0th
+    // removes the attacking bit, and then limits the max to 11 sectors, because this isn't counter super earth as the 0th
     data = (data >> 1) << 1;
     data = data & ~0b0000000000010000;
     for (int i = 11; i >= 0; i--)
@@ -434,9 +435,9 @@ void show_recap_for_front(void *data)
         return;
     }
     uint16_t mapData = timerData->array[timerData->index];
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "-- Showing recap... index: %zu + %zu, data: %u", timerData->index,timerData->sector_offset, mapData);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "-- Showing recap... index: %zu + %zu, data: %u", timerData->index, timerData->sector_offset, mapData);
     int sector = getSectorByData(mapData);
-    //if (timerData->index >=12) sector = 34;
+    // if (timerData->index >=12) sector = 34;
     if (sector != 34)
         sector += timerData->sector_offset;
     change_sector(sector);
@@ -450,7 +451,7 @@ void show_recap_for_front(void *data)
 
 void HN_DoRecap(HN_MapData *end)
 {
-
+    light_enable(true);
     size_t bugsarrylen = get_interp_data(showing->bugs, end->bugs, bugsRecapArray);
     size_t botsarrylen = get_interp_data(showing->bots, end->bots, botsRecapArray);
     size_t illumarrylen = get_interp_data(showing->illum, end->illum, illumRecapArray);
@@ -494,13 +495,15 @@ void HN_DoRecap(HN_MapData *end)
 /// @brief Called when the window is removed
 void HN_DesWin_Recap(Window *window)
 {
+    light_enable(false);
     layer_destroy(map_layer);
     gdraw_command_image_destroy(map_image);
 
     layer_destroy(foreground_layer);
     gdraw_command_image_destroy(foreground_image);
-    if (foreground_animation)
-    animation_destroy(foreground_animation);
+
+    if (recap_timer)
+        app_timer_cancel(recap_timer);
 
     bitmap_layer_destroy(faction_icon_bg_layer);
     gbitmap_destroy(bugs_icon_bitmap);
