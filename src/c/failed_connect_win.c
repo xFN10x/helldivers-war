@@ -42,6 +42,7 @@ static void cls(void *context)
 
 void HN_ReadyWin_FailedConnec()
 {
+    vibes_long_pulse();
     app_timer_register(5000, cls, NULL);
 }
 

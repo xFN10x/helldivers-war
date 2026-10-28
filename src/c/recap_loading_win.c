@@ -13,6 +13,8 @@ static AppTimer *aniTimer;
 static int aniIndex = 0;
 static Window *this;
 static Animation *rawAni;
+static AppTimer *timeout;
+static bool gave_up = false;
 
 static void next_frame_handler(void *context)
 {
@@ -49,6 +51,10 @@ static void render_ani_vec_animated(Layer *layer, GContext *ctx)
     {
         aniIndex = num_frames - 1;
     }
+}
+
+static void timedout(void *data) {
+    HN_SwitchWin(&HN_FAILED_CONNECT_WIN, true);
 }
 
 void HN_GetWin_RecapLoading(Window *window)
@@ -101,6 +107,7 @@ void HN_ReadyWin_RecapLoading()
 
     dict_write_data(mapUpdatedMsg, MESSAGE_KEY_HBMapUpdated, (void *)&mapData, sizeof(HN_MapData));
     HN_SendMsg(mapUpdatedMsg);
+    timeout = app_timer_register(10000, timedout, NULL);
 }
 
 void HN_NoRecap()
@@ -113,6 +120,9 @@ static void next(void* data) {
 
 void HN_RecapContinue()
 {
+    if (gave_up) return;
+    app_timer_cancel(timeout);
+    vibes_double_pulse();
     animation_schedule(rawAni);
     app_timer_register(2000, next, NULL);
 }
@@ -127,6 +137,11 @@ void HN_DesWin_RecapLoading(Window *window)
         app_timer_cancel(aniTimer);
         aniTimer = NULL;
     }
+    if (timeout) {
+        app_timer_cancel(timeout);
+        timeout = NULL;
+    }
+
     layer_destroy(animation_layer);
     text_layer_destroy(text);
     gdraw_command_sequence_destroy(animation_animated_draw);
