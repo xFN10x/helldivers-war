@@ -44,6 +44,16 @@ static uint16_t bugsRecapArray[13];
 static uint16_t botsRecapArray[13];
 static uint16_t illumRecapArray[13];
 
+static TextLayer *recapLog0Text;
+static TextLayer *recapLog1Text;
+static TextLayer *recapLog2Text;
+static char recap_log[40][64];
+static int recap_logi = 0;
+
+static GFont font20;
+static GFont font18;
+static GFont font14;
+
 // Source - https://stackoverflow.com/a/4353537
 // Posted by aioobe, modified by community. See post 'Timeline' for change history
 // Retrieved 2026-10-03, License - CC BY-SA 4.0
@@ -331,6 +341,21 @@ static void check_map_updated(void *data)
     map_check_timer = app_timer_register(3, check_map_updated, NULL);
 }
 
+static void log_recap(char str[])
+{
+    APP_LOG(APP_LOG_LEVEL_INFO, str);
+    memcpy(recap_log[recap_logi], str, sizeof(char) * 64);
+
+    text_layer_set_text(recapLog0Text, recap_log[recap_logi]);
+
+    if (recap_logi >= 1)
+        text_layer_set_text(recapLog1Text, recap_log[recap_logi - 1]);
+    if (recap_logi >= 2)
+        text_layer_set_text(recapLog2Text, recap_log[recap_logi - 2]);
+
+    recap_logi++;
+}
+
 void HN_ClickProvWin_Recap(void *context)
 {
     window_single_click_subscribe(BUTTON_ID_SELECT, select_pressed);
@@ -382,9 +407,33 @@ void HN_GetWin_Recap(Window *window)
 
     map_check_timer = app_timer_register(3, check_map_updated, NULL);
 
+    recapLog0Text = text_layer_create(GRect(10, 200, 180, 24));
+    recapLog1Text = text_layer_create(GRect(60, 182, 140, 18));
+    recapLog2Text = text_layer_create(GRect(90, 168, 110, 14));
+
+    font20 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_SECOND_FONT_18));
+    font18 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_SECOND_FONT_14));
+    font14 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_SECOND_FONT_10));
+
+    text_layer_set_font(recapLog0Text, font20);
+    text_layer_set_font(recapLog1Text, font18);
+    text_layer_set_font(recapLog2Text, font14);
+
+    text_layer_set_background_color(recapLog0Text, GColorDarkGray);
+    text_layer_set_background_color(recapLog1Text, GColorDarkGray);
+    text_layer_set_background_color(recapLog2Text, GColorDarkGray);
+    // GColorDarkGray
+    text_layer_set_text_color(recapLog0Text, GColorWhite);
+    text_layer_set_text_color(recapLog1Text, GColorLightGray);
+    text_layer_set_text_color(recapLog2Text, GColorLightGray);
+
+    // layered from add time, first is back
     layer_add_child(wlayer, bitmap_layer_get_layer(faction_icon_bg_layer));
     layer_add_child(wlayer, map_layer);
     layer_add_child(wlayer, foreground_layer);
+    layer_add_child(wlayer, text_layer_get_layer(recapLog0Text));
+    layer_add_child(wlayer, text_layer_get_layer(recapLog1Text));
+    layer_add_child(wlayer, text_layer_get_layer(recapLog2Text));
 }
 
 void HN_ReadyWin_Recap()
@@ -401,7 +450,7 @@ void HN_ReadyWin_Recap()
 
 int getSectorByData(uint16_t data)
 {
-    // removes the attacking bit, and then limits the max to 11 sectors, because this isn't counter super earth as the 0th
+    // removes the attacking bit, and then limits the max to 11 sectors, because this isn't counting super earth as the 0th
     data = (data >> 1) << 1;
     data = data & ~0b0000000000010000;
     for (int i = 11; i >= 0; i--)
@@ -409,7 +458,7 @@ int getSectorByData(uint16_t data)
         uint16_t mask = (0b1111111111100000 << i);
         if (!(data ^ mask))
         {
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "Data: %u is sector: %u", data, 11 - i);
+            // APP_LOG(APP_LOG_LEVEL_DEBUG, "Data: %u is sector: %u", data, 11 - i);
             return 11 - i;
         }
     }
@@ -442,6 +491,21 @@ void show_recap_for_front(void *data)
         sector += timerData->sector_offset;
     change_sector(sector);
 
+    uint16_t modif_check = mapData & *(timerData->sector_data_to_change);
+    if (modif_check != mapData)
+    {
+        char text[38] = "HELLDIVERS took ";
+        strcat(text, timerData->regions[timerData->index]);
+        log_recap(text);
+    }
+    else
+    {
+        char text[38] = "HELLDIVERS lost ";
+        strcat(text, timerData->regions[timerData->index]);
+        log_recap(text);
+    }
+        log_recap("tesg");
+
     *(timerData->sector_data_to_change) = mapData;
     showing_set = false;
 
@@ -451,6 +515,7 @@ void show_recap_for_front(void *data)
 
 void HN_DoRecap(HN_MapData *end)
 {
+    log_recap("HELLDIVERS took Skibidi Lince");
     light_enable(true);
     size_t bugsarrylen = get_interp_data(showing->bugs, end->bugs, bugsRecapArray);
     size_t botsarrylen = get_interp_data(showing->bots, end->bots, botsRecapArray);

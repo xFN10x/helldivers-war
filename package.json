@@ -99,6 +99,24 @@
           "type": "raw",
           "name": "RECAP_FORE",
           "file": "recap_area.pdc"
+        },
+        {
+          "type": "font",
+          "name": "SECOND_FONT_18",
+          "file": "font2.ttf",
+          "characterRegex": "[ -~]"
+        },
+        {
+          "type": "font",
+          "name": "SECOND_FONT_14",
+          "file": "font2.ttf",
+          "characterRegex": "[ -~]"
+        },
+        {
+          "type": "font",
+          "name": "SECOND_FONT_10",
+          "file": "font2.ttf",
+          "characterRegex": "[ -~]"
         }
       ]
     }
