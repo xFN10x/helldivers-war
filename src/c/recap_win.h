@@ -11,6 +11,7 @@ typedef struct RecapTimerData {
     size_t sector_offset;
     uint16_t *sector_data_to_change;
     struct RecapTimerData *next;
+    char faction_name[12];
 } RecapTimerData;
 
 void HN_GetWin_Recap(Window *window);

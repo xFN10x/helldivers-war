@@ -117,6 +117,35 @@
           "name": "SECOND_FONT_10",
           "file": "font2.ttf",
           "characterRegex": "[ -~]"
+        },
+
+        {
+          "type": "bitmap",
+          "name": "BUGS_ICON_38",
+          "file": "factions/bugs38.png",
+          "memoryFormat": "Smallest",
+          "spaceOptimization": "memory"
+        },
+        {
+          "type": "bitmap",
+          "name": "BOTS_ICON_38",
+          "file": "factions/cyborgs38.png",
+          "memoryFormat": "Smallest",
+          "spaceOptimization": "memory"
+        },
+        {
+          "type": "bitmap",
+          "name": "ILLUMINATES_ICON_38",
+          "file": "factions/illumanates38.png",
+          "memoryFormat": "Smallest",
+          "spaceOptimization": "memory"
+        },
+        {
+          "type": "bitmap",
+          "name": "SUPEREARTH_ICON_38",
+          "file": "factions/superearth38.png",
+          "memoryFormat": "Smallest",
+          "spaceOptimization": "memory"
         }
       ]
     }

@@ -15,10 +15,15 @@ static GDrawCommandImage *foreground_image;
 static Animation *foreground_animation;
 
 static BitmapLayer *faction_icon_bg_layer;
+static BitmapLayer *faction_icon_fg_layer;
 static GBitmap *bugs_icon_bitmap;
 static GBitmap *bots_icon_bitmap;
 static GBitmap *illuminate_icon_bitmap;
 static GBitmap *superearth_icon_bitmap;
+static GBitmap *bugs38_icon_bitmap;
+static GBitmap *bots38_icon_bitmap;
+static GBitmap *illuminate38_icon_bitmap;
+static GBitmap *superearth38_icon_bitmap;
 
 static Window *this;
 
@@ -203,7 +208,8 @@ static bool update_map_commands(GDrawCommand *command, uint32_t index, void *con
     else
     {
         // this is super earth
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "Front is OUR HOME");
+        if (log)
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "Front is OUR HOME");
         gdraw_command_set_fill_color(command, showing->superEarthPoints >= showing->superEarthMax ? GColorArmyGreen : GColorRed);
         return true;
     }
@@ -243,30 +249,34 @@ static void change_sector(int sec)
     selected_sector = sec;
     sector_offset_x = sector_offsets[selected_sector][0];
     sector_offset_y = sector_offsets[selected_sector][1];
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "changed sector %i (%i, %i)", selected_sector, sector_offset_x, sector_offset_y);
+    // APP_LOG(APP_LOG_LEVEL_DEBUG, "changed sector %i (%i, %i)", selected_sector, sector_offset_x, sector_offset_y);
 
     if (selected_sector < 11)
     {
         // bug
         bitmap_layer_set_background_color(faction_icon_bg_layer, GColorWindsorTan);
         bitmap_layer_set_bitmap(faction_icon_bg_layer, bugs_icon_bitmap);
+        bitmap_layer_set_bitmap(faction_icon_fg_layer, bugs38_icon_bitmap);
     }
     else if (selected_sector < 22)
     {
         // cyborg
         bitmap_layer_set_background_color(faction_icon_bg_layer, GColorBulgarianRose);
         bitmap_layer_set_bitmap(faction_icon_bg_layer, bots_icon_bitmap);
+        bitmap_layer_set_bitmap(faction_icon_fg_layer, bots38_icon_bitmap);
     }
     else if (selected_sector < 33)
     {
         // illum
         bitmap_layer_set_background_color(faction_icon_bg_layer, GColorPictonBlue);
         bitmap_layer_set_bitmap(faction_icon_bg_layer, illuminate_icon_bitmap);
+        bitmap_layer_set_bitmap(faction_icon_fg_layer, illuminate38_icon_bitmap);
     }
     else
     {
         bitmap_layer_set_background_color(faction_icon_bg_layer, GColorCobaltBlue);
         bitmap_layer_set_bitmap(faction_icon_bg_layer, superearth_icon_bitmap);
+        bitmap_layer_set_bitmap(faction_icon_fg_layer, superearth38_icon_bitmap);
     }
 }
 
@@ -402,8 +412,15 @@ void HN_GetWin_Recap(Window *window)
     illuminate_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ILLUMINATES_ICON);
     superearth_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_SUPEREARTH_ICON);
 
+    bugs38_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_BUGS_ICON_38);
+    bots38_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_BOTS_ICON_38);
+    illuminate38_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ILLUMINATES_ICON_38);
+    superearth38_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_SUPEREARTH_ICON_38);
+
     faction_icon_bg_layer = bitmap_layer_create(GRect(0, 0, 200, 228));
     bitmap_layer_set_compositing_mode(faction_icon_bg_layer, GCompOpSet);
+    faction_icon_fg_layer = bitmap_layer_create(GRect(10, 170, 38, 38));
+    bitmap_layer_set_compositing_mode(faction_icon_fg_layer, GCompOpSet);
 
     map_check_timer = app_timer_register(3, check_map_updated, NULL);
 
@@ -411,7 +428,7 @@ void HN_GetWin_Recap(Window *window)
     recapLog1Text = text_layer_create(GRect(60, 182, 140, 18));
     recapLog2Text = text_layer_create(GRect(90, 168, 110, 14));
 
-    font20 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_SECOND_FONT_18));
+    font20 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_SECOND_FONT_14));
     font18 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_SECOND_FONT_14));
     font14 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_SECOND_FONT_10));
 
@@ -431,9 +448,12 @@ void HN_GetWin_Recap(Window *window)
     layer_add_child(wlayer, bitmap_layer_get_layer(faction_icon_bg_layer));
     layer_add_child(wlayer, map_layer);
     layer_add_child(wlayer, foreground_layer);
+
     layer_add_child(wlayer, text_layer_get_layer(recapLog0Text));
     layer_add_child(wlayer, text_layer_get_layer(recapLog1Text));
     layer_add_child(wlayer, text_layer_get_layer(recapLog2Text));
+
+    layer_add_child(wlayer, bitmap_layer_get_layer(faction_icon_fg_layer));
 }
 
 void HN_ReadyWin_Recap()
@@ -479,8 +499,14 @@ void show_recap_for_front(void *data)
     // APP_LOG(APP_LOG_LEVEL_DEBUG, "index: %zu, len: %zu", timerData->index, timerData->length);
     if (timerData->index >= timerData->length)
     {
+        char completeText[26] = "";
+        strcat(completeText, timerData->faction_name);
+        strcat(completeText, " recap complete.");
+        log_recap(completeText);
         if (timerData->next != NULL)
+        {
             recap_timer = app_timer_register(2000, show_recap_for_front, timerData->next);
+        }
         return;
     }
     uint16_t mapData = timerData->array[timerData->index];
@@ -492,19 +518,26 @@ void show_recap_for_front(void *data)
     change_sector(sector);
 
     uint16_t modif_check = mapData & *(timerData->sector_data_to_change);
-    if (modif_check != mapData)
+    char text[38] = "";
+    if (sector % 11 == 0)
     {
-        char text[38] = "HELLDIVERS took ";
-        strcat(text, timerData->regions[timerData->index]);
-        log_recap(text);
+        strcat(text, "> ");
+        strcat(text, timerData->faction_name);
+        strcat(text, "s defeated.");
     }
     else
     {
-        char text[38] = "HELLDIVERS lost ";
-        strcat(text, timerData->regions[timerData->index]);
-        log_recap(text);
+        if (modif_check != mapData)
+        {
+            strcat(text, "+ ");
+        }
+        else
+        {
+            strcat(text, "~ ");
+        }
+        strcat(text, timerData->regions[(sector - 1) % 11]);
     }
-        log_recap("tesg");
+    log_recap(text);
 
     *(timerData->sector_data_to_change) = mapData;
     showing_set = false;
@@ -515,7 +548,7 @@ void show_recap_for_front(void *data)
 
 void HN_DoRecap(HN_MapData *end)
 {
-    log_recap("HELLDIVERS took Skibidi Lince");
+    log_recap("Initating recap...");
     light_enable(true);
     size_t bugsarrylen = get_interp_data(showing->bugs, end->bugs, bugsRecapArray);
     size_t botsarrylen = get_interp_data(showing->bots, end->bots, botsRecapArray);
@@ -532,7 +565,8 @@ void HN_DoRecap(HN_MapData *end)
         .regions = HN_illumRegionNames,
         .sector_offset = 22,
         .sector_data_to_change = &showing->illum,
-        .next = NULL};
+        .next = NULL,
+        .faction_name = "Illuminate"};
 
     botRecapTimerData = (RecapTimerData){
         .index = 0,
@@ -542,7 +576,8 @@ void HN_DoRecap(HN_MapData *end)
         .regions = HN_botRegionNames,
         .sector_offset = 11,
         .sector_data_to_change = &showing->bots,
-        .next = &illuminateRecapTimerData};
+        .next = &illuminateRecapTimerData,
+        .faction_name = "Cyborg"};
 
     bugRecapTimerData = (RecapTimerData){
         .index = 0,
@@ -552,7 +587,8 @@ void HN_DoRecap(HN_MapData *end)
         .regions = HN_bugRegionNames,
         .sector_offset = 0,
         .sector_data_to_change = &showing->bugs,
-        .next = &botRecapTimerData};
+        .next = &botRecapTimerData,
+        .faction_name = "Bug"};
 
     recap_timer = app_timer_register(2000, show_recap_for_front, &bugRecapTimerData);
 }
