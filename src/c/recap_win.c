@@ -519,7 +519,7 @@ void show_recap_for_front(void *data)
 
     uint16_t modif_check = mapData & *(timerData->sector_data_to_change);
     char text[38] = "";
-    if (sector % 11 == 0)
+    if (sector != 0 && sector % 11 == 0)
     {
         strcat(text, "> ");
         strcat(text, timerData->faction_name);

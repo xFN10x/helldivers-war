@@ -131,6 +131,11 @@ void HN_Win_Loading_JSReady()
     int val = 1;
     dict_write_int(pingReq, MESSAGE_KEY_HBPing, &val, sizeof(int), true);
     HN_SendMsg(pingReq);
+
+    if (!connection_service_peek_pebble_app_connection()) timeout(NULL);
+    else if (!app_worker_is_running()) {
+        app_worker_launch();
+    }
 }
 
 /// @brief Called when the window is removed

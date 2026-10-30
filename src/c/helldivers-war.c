@@ -20,88 +20,82 @@ GFont HN_Font1;
 GFont HN_Font2;
 
 char *HN_bugRegionNames[11] = {
-  "Wise Region",
-  "Kruger System",
-  "Ross System",
-  "Struve Region",
-  "Xi Tauri Region",
-  "Cancri System",
-  "Higgs Region",
-  "Hawking Region",
-  "Rigel System",
-  "Aurigae Region",
-  "Kepler System"
-};
+    "Wise Region",
+    "Kruger System",
+    "Ross System",
+    "Struve Region",
+    "Xi Tauri Region",
+    "Cancri System",
+    "Higgs Region",
+    "Hawking Region",
+    "Rigel System",
+    "Aurigae Region",
+    "Kepler System"};
 
 char *HN_bugPlanetNames[11] = {
-  "New New York",
-  "Liberty City",
-  "Tiberia",
-  "Northman's Creek",
-  "New Haven",
-  "Freedom Fortress",
-  "Martyr's Bay",
-  "Segma Prime",
-  "Freedom Peak",
-  "Final Frontier",
-  "Kepler Prime"
-};
+    "New New York",
+    "Liberty City",
+    "Tiberia",
+    "Northman's Creek",
+    "New Haven",
+    "Freedom Fortress",
+    "Martyr's Bay",
+    "Segma Prime",
+    "Freedom Peak",
+    "Final Frontier",
+    "Kepler Prime"};
 
 char *HN_botRegionNames[11] = {
-  "Sirius Region",
-  "Polaris Region",
-  "Pictor Sector",
-  "Sagan Region",
-  "Horolium System",
-  "Gellert Region",
-  "Lacaille Region",
-  "Indi System",
-  "Ceti System",
-  "Cygni Region",
-  "Cyberstan Region"
-};
+    "Sirius Region",
+    "Polaris Region",
+    "Pictor Sector",
+    "Sagan Region",
+    "Horolium System",
+    "Gellert Region",
+    "Lacaille Region",
+    "Indi System",
+    "Ceti System",
+    "Cygni Region",
+    "Cyberstan Region"};
 
 char *HN_botPlanetNames[11] = {
-  "Stockholm City",
-  "Thunder Head",
-  "New Moscow",
-  "Highwind",
-  "Providence",
-  "Gellert City",
-  "Bahia Democracia",
-  "Winter Hold",
-  "Doral Creek",
-  "New Berlin",
-  "Cyberstan"
-};
+    "Stockholm City",
+    "Thunder Head",
+    "New Moscow",
+    "Highwind",
+    "Providence",
+    "Gellert City",
+    "Bahia Democracia",
+    "Winter Hold",
+    "Doral Creek",
+    "New Berlin",
+    "Cyberstan"};
 
 char *HN_illumRegionNames[11] = {
-  "Centaury Region",
-  "Barnard Region",
-  "Procyon Region",
-  "Castor System",
-  "Orionis Region",
-  "Prometheus System",
-  "Cassiopaiae Region",
-  "Ursa Region",
-  "Canes Region",
-  "Arcturus Region",
-  "Squ'bai System"
-};
+    "Centaury Region",
+    "Barnard Region",
+    "Procyon Region",
+    "Castor System",
+    "Orionis Region",
+    "Prometheus System",
+    "Cassiopaiae Region",
+    "Ursa Region",
+    "Canes Region",
+    "Arcturus Region",
+    "Squ'bai System"};
 
 char *HN_illumPlanetNames[11] = {
-  "New Hanover",
-  "Iron Tower",
-  "White Landing",
-  "Justice Bay",
-  "New Alexandria",
-  "Ribatishiti",
-  "Dal Rage",
-  "Ultima",
-  "Jiyu Toshi",
-  "Hawk Nest",
-  "Squ'bai Shrine"
-};
+    "New Hanover",
+    "Iron Tower",
+    "White Landing",
+    "Justice Bay",
+    "New Alexandria",
+    "Ribatishiti",
+    "Dal Rage",
+    "Ultima",
+    "Jiyu Toshi",
+    "Hawk Nest",
+    "Squ'bai Shrine"};
 
 int HN_STORKEY_MAPCACHE = 0;
 
@@ -135,16 +129,26 @@ static void prv_init(void)
 {
   msg_init();
 
-  HN_Font1 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_MAIN_FONT_20));
+  if (launch_reason() == APP_LAUNCH_WORKER)
+  {
+    if (current_hn_window) current_hn_window->destroy(current_window);
+    current_window = window_create();
+    window_stack_push(current_window, true);
+  }
+  else
+  {
 
-  HN_SwitchWin(&HN_LOADING_WIN, true);
+    HN_Font1 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_MAIN_FONT_20));
+
+    HN_SwitchWin(&HN_LOADING_WIN, true);
+  }
 }
 
 int main(void)
 {
   prv_init();
 
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", current_window);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p, launch reason: %i", current_window, launch_reason());
 
   app_event_loop();
 }
